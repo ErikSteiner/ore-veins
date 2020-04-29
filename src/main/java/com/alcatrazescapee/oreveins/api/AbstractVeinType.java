@@ -1,12 +1,10 @@
 package com.alcatrazescapee.oreveins.api;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-
+import com.alcatrazescapee.oreveins.BiomeMapper;
+import com.alcatrazescapee.oreveins.OreVeinsConfig;
+import com.alcatrazescapee.oreveins.util.IWeightedList;
+import com.alcatrazescapee.oreveins.vein.Indicator;
+import com.alcatrazescapee.oreveins.vein.VeinRegistry;
 import com.google.gson.annotations.SerializedName;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
@@ -14,15 +12,14 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 
-import com.alcatrazescapee.oreveins.OreVeinsConfig;
-import com.alcatrazescapee.oreveins.util.IWeightedList;
-import com.alcatrazescapee.oreveins.vein.Indicator;
-import com.alcatrazescapee.oreveins.vein.VeinRegistry;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.*;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 @ParametersAreNonnullByDefault
-public abstract class AbstractVeinType<V extends AbstractVein<?>> implements IVeinType<V>
-{
+public abstract class AbstractVeinType<V extends AbstractVein<?>> implements IVeinType<V> {
     protected int count = 1;
     protected int rarity = 10;
     @SerializedName("min_y")
@@ -54,37 +51,29 @@ public abstract class AbstractVeinType<V extends AbstractVein<?>> implements IVe
 
     @Nonnull
     @Override
-    public IBlockState getStateToGenerate(Random rand)
-    {
+    public IBlockState getStateToGenerate(Random rand) {
         return oreStates.get(rand);
     }
 
     @Nonnull
     @Override
-    public Collection<IBlockState> getOreStates()
-    {
+    public Collection<IBlockState> getOreStates() {
         return oreStates.values();
     }
 
     @Nullable
     @Override
-    public Indicator getIndicator(Random random)
-    {
+    public Indicator getIndicator(Random random) {
         return indicator != null ? indicator.get(random) : null;
     }
 
     @Override
-    public boolean canGenerateAt(World world, BlockPos pos)
-    {
+    public boolean canGenerateAt(World world, BlockPos pos) {
         IBlockState stoneState = world.getBlockState(pos);
-        if (stoneStates.contains(stoneState))
-        {
-            if (conditions != null)
-            {
-                for (ICondition condition : conditions)
-                {
-                    if (!condition.test(world, pos))
-                    {
+        if (stoneStates.contains(stoneState)) {
+            if (conditions != null) {
+                for (ICondition condition : conditions) {
+                    if (!condition.test(world, pos)) {
                         return false;
                     }
                 }
@@ -95,22 +84,17 @@ public abstract class AbstractVeinType<V extends AbstractVein<?>> implements IVe
     }
 
     @Override
-    public boolean inRange(V vein, int xOffset, int zOffset)
-    {
+    public boolean inRange(V vein, int xOffset, int zOffset) {
         return xOffset * xOffset + zOffset * zOffset < horizontalSize * horizontalSize * vein.getSize();
     }
 
     @Override
-    public boolean matchesDimension(int id)
-    {
-        if (dimensions == null)
-        {
+    public boolean matchesDimension(int id) {
+        if (dimensions == null) {
             return id == 0;
         }
-        for (int i : dimensions)
-        {
-            if (id == i)
-            {
+        for (int i : dimensions) {
+            if (id == i) {
                 return dimensionIsWhitelist;
             }
         }
@@ -154,41 +138,33 @@ public abstract class AbstractVeinType<V extends AbstractVein<?>> implements IVe
     }
 
     @Override
-    public int getMinY()
-    {
+    public int getMinY() {
         return minY;
     }
 
     @Override
-    public int getMaxY()
-    {
+    public int getMaxY() {
         return maxY;
     }
 
     @Override
-    public int getCount()
-    {
+    public int getCount() {
         return count;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return String.format("[%s: Count: %d, Rarity: %d, Y: %d - %d, Size: %d / %d, Density: %2.2f, Ores: %s, Stones: %s]", VeinRegistry.getName(this), count, rarity, minY, maxY, horizontalSize, verticalSize, density, oreStates, stoneStates);
     }
 
-    protected final BlockPos defaultStartPos(int chunkX, int chunkZ, Random rand)
-    {
-        int spawnRange = maxY - minY, minRange = minY;
-        if (OreVeinsConfig.AVOID_VEIN_CUTOFFS)
-        {
-            if (verticalSize * 2 < spawnRange)
-            {
+    protected final BlockPos defaultStartPos(int chunkX, int chunkZ, Random rand) {
+        int spawnRange = maxY - minY;
+        int minRange = minY;
+        if (OreVeinsConfig.AVOID_VEIN_CUTOFFS) {
+            if (verticalSize * 2 < spawnRange) {
                 spawnRange -= verticalSize * 2;
                 minRange += verticalSize;
-            }
-            else
-            {
+            } else {
                 minRange = minY + (maxY - minY) / 2;
                 spawnRange = 1;
             }
@@ -201,20 +177,17 @@ public abstract class AbstractVeinType<V extends AbstractVein<?>> implements IVe
     }
 
     @Override
-    public int getRarity()
-    {
+    public int getRarity() {
         return rarity;
     }
 
     @Override
-    public int getChunkRadius()
-    {
+    public int getChunkRadius() {
         return 1 + (horizontalSize >> 4);
     }
 
     @Override
-    public boolean useRelativeY()
-    {
+    public boolean useRelativeY() {
         return useRelativeY;
     }
 }
