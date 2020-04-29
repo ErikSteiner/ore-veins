@@ -10,7 +10,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraftforge.common.BiomeDictionary;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -102,27 +101,75 @@ public abstract class AbstractVeinType<V extends AbstractVein<?>> implements IVe
     }
 
     @Override
-    public boolean matchesBiome(Biome biome)
-    {
+    public boolean matchesBiome(Biome biome) {
         if (biomes == null) return true;
-        for (String s : biomes)
-        {
-            //noinspection ConstantConditions
-            String biomeName = biome.getRegistryName().getResourcePath();
-            if (biomeName.equals(s))
-            {
-                return biomesIsWhitelist;
+        @SuppressWarnings({"ConstantConditions", "squid:S1871"})
+        String biomeName = biome.getRegistryName().toString();
+        boolean posTagIsWhitelist = false;
+
+        List<String> jsonBiomes = new ArrayList<>();
+        List<String> jsonPosTags = new ArrayList<>();
+        List<String> jsonNegTags = new ArrayList<>();
+        List<String> jsonConditionTags = new ArrayList<>();
+
+        Map<String, Set<String>> biomeTags = BiomeMapper.getBiomeTags();
+        Map<String, List<String>> biomeMap = BiomeMapper.getBiomeMap();
+
+        // build the lists
+        for (String s : biomes) {
+            if (BiomeMapper.isCapitalized(s) && !s.contains("&")) {
+                if (s.startsWith("-")) {
+                    jsonNegTags.add(s.substring(1));  // add s to jsonNegTags
+                } else {
+                    jsonPosTags.add(s);  // add s to jsonPosTags
+                }
+            } else if (BiomeMapper.isCapitalized(s) && s.contains("&")) {
+                jsonConditionTags.add(s);  // add s to jsonConditionTags
+            } else if (!BiomeMapper.isCapitalized(s)) {
+                jsonBiomes.add(s);  // add s to jsonbiomes
             }
-            for (BiomeDictionary.Type type : BiomeDictionary.getTypes(biome))
-            {
-                if (s.equalsIgnoreCase(type.getName()))
-                {
-                    return biomesIsWhitelist;
+        }
+
+        // check biome name list first
+        if (!jsonBiomes.isEmpty() && !jsonBiomes.stream().anyMatch(biomeName::contains)) {
+            return false;
+        }
+
+        // check positive biome tags
+        if (!jsonPosTags.isEmpty()) {
+            for (String s : jsonPosTags) {
+                if (biomeTags.get(s).stream().anyMatch(str -> str.trim().equals(biomeName))) {
+                    posTagIsWhitelist = true;
+                    break;
+                }
+            }
+            if (!posTagIsWhitelist) {
+                return false;
+            }
+        }
+
+        // check negative biome tags
+        if (!jsonNegTags.isEmpty()) {
+            for (String s : jsonNegTags) {
+                // s contains the following biomes biomeTags.get(s))
+                if (biomeTags.get(s).stream().anyMatch(str -> str.trim().equals(biomeName))) {
+                    return false;
                 }
             }
         }
-        return !biomesIsWhitelist;
+
+        // check condition biome tags
+        if (!jsonConditionTags.isEmpty()) {
+            for (String s : jsonConditionTags) {
+                // if jsonConditionTags s condition for biomeName is false, make false
+                if (!BiomeMapper.conditionIsWhitelist(s, biomeName, biomeMap)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
+
 
     @Override
     public boolean isValid()
