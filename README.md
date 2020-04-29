@@ -26,7 +26,30 @@ Each entry can also contain any or all of the following values. If they don't ex
 * `density` (Default: 50) Density of the ore vein. Higher values are more dense. (FYI: This number is not a percentage. For 100% density use values >1000)
 * `vertical_size` (Default: 15) Vertical radius. This is not an absolute number in blocks, but is close to. Experimentation is required.
 * `horizontal_size` (Default: 8) Horizontal radius. This is not an absolute number in blocks, but is close to. Experimentation is required.
-* `biomes` (Default: all) Whitelist of biome names or biome tags for a biome to spawn in. Must be a list of strings. For info on possible tags see the Forge [Biome Dictionary](https://github.com/MinecraftForge/MinecraftForge/blob/1.12.x/src/main/java/net/minecraftforge/common/BiomeDictionary.java).
+* `biomes` (Default: all) List of biome __names__ or biome __tags__ for a biome to spawn in.
+Must be a list of strings. For info on possible tags see the Forge [Biome Dictionary](https://github.com/MinecraftForge/MinecraftForge/blob/1.12.x/src/main/java/net/minecraftforge/common/BiomeDictionary.java).
+   * Biome __names__ match their name (e.g. `"minecraft:extreme_hills"`). Names can be used to allow
+   specific biome names like `minecraft:forest`. Note the colon (`:`) in the name - it is required.
+   * __tags__ are capitalized (e.g. `"HOT"`). Tag `FOREST` includes all biomes with tag `FOREST` e. g.
+       `"minecraft:forest", "minecraft:taiga", "conquest:lorein_forest", "minecraft:taiga_hills"`.
+       Tags can save a lot of work. Instead of specifying a large number of names, 
+       one tag may be sufficient instead. Tags address a variety of biomes, so it can be helpful to exclude
+       tags. If you want to allow all biomes with the tag `FOREST`, but exclude all with the tag `HILLS`, 
+       this is possible. Using a minus sign in front of a tag tells the program that this is a forbidden tag:
+       `"FOREST", "-HILLS"` In this example all biomes with tag `FOREST` are allowed, but all biomes with tag
+       `HILLS` not.
+   * __conditional__ tags extend the __tags__ feature. What if there are biomes that have the tag `FOREST`
+   and the tag `HOT`. As already known, biomes can have several tags simultaneously. If you try to place a
+   vein in just these biomes, the config file can become quite long. `"FOREST", "HOT"` would not lead to 
+   the result, as it would allow all biomes that have the `FOREST` or the `HOT` tag. So why not like this:
+   `"FOREST&HOT"` The quotation marks (`"`) are correctly placed only at the edges, to make it one
+   condition: Conditional tags. The tags are separated from each other without spaces with an (`&`)
+   symbol. For later processing, the program will split the tags using the delimiter (`&`). Conditional
+   tags allow a very specific permission system that is however not bind to any actual biome name. Plus
+   conditional tags also allow negative tags: `"FOREST&-CONIFEROUS"`. So all biome names are allowed that
+   have the tag `FOREST`, but don't have the `CONIFEROUS` tag. It is obvious that this could also be 
+   realized with normal __tags__. But to divide and select the total amount of biomes behind __tags__,
+   conditional tags offer many possibilities.
 * `biomes_is_whitelist` (Default: true) When false, the biome list becomes a blacklist
 * `dimensions` (Default: 0) Whitelist of dimension ids that the ore can spawn in. Must be a list of integers.
 * `dimensions_is_whitelist` (Default: true) When false, the dimension list becomes a blacklist
