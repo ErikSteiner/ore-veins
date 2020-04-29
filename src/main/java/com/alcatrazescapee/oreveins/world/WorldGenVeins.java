@@ -6,12 +6,13 @@
 
 package com.alcatrazescapee.oreveins.world;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import javax.annotation.Nonnull;
-
+import com.alcatrazescapee.oreveins.OreVeinsConfig;
+import com.alcatrazescapee.oreveins.api.IVein;
+import com.alcatrazescapee.oreveins.api.IVeinType;
+import com.alcatrazescapee.oreveins.vein.Indicator;
+import com.alcatrazescapee.oreveins.vein.VeinRegistry;
 import net.minecraft.block.BlockHugeMushroom;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -22,11 +23,10 @@ import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraftforge.fml.common.IWorldGenerator;
 
-import com.alcatrazescapee.oreveins.OreVeinsConfig;
-import com.alcatrazescapee.oreveins.api.IVein;
-import com.alcatrazescapee.oreveins.api.IVeinType;
-import com.alcatrazescapee.oreveins.vein.Indicator;
-import com.alcatrazescapee.oreveins.vein.VeinRegistry;
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class WorldGenVeins implements IWorldGenerator
 {
@@ -77,7 +77,12 @@ public class WorldGenVeins implements IWorldGenerator
         {
             mPos.move(EnumFacing.DOWN, 1);
             IBlockState state = chunk.getBlockState(mPos);
-            if (state.getMaterial().blocksMovement() && !state.getBlock().isLeaves(state, world, mPos) && !state.getBlock().isFoliage(world, mPos) && !state.getMaterial().isLiquid() && !(state.getBlock() instanceof BlockHugeMushroom))
+            if (state.getMaterial().blocksMovement()
+                    && !state.getBlock().isLeaves(state, world, mPos)
+                    && !state.getBlock().isFoliage(world, mPos)
+                    && !state.getMaterial().isLiquid()
+                    && state.getMaterial() != Material.WOOD
+                    && !(state.getBlock() instanceof BlockHugeMushroom))
             {
                 break;
             }
