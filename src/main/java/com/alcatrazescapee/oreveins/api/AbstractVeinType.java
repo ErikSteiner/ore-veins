@@ -172,7 +172,7 @@ public abstract class AbstractVeinType<V extends AbstractVein<?>> implements IVe
 
 
     @Override
-    public boolean isValid()
+    public boolean isValid() // ToDO: Pretty undetailed error handler. Need more feedback if e.g useRelativeY&Min&Max wrong
     {
         return oreStates != null && !oreStates.isEmpty() &&
                 stoneStates != null && !stoneStates.isEmpty() &&
